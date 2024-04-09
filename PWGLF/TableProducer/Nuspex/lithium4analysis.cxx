@@ -89,7 +89,9 @@ struct lithium4Candidate {
   std::array<float, 3> momHe3 = {99.f, 99.f, 99.f};
   std::array<float, 3> momPr = {99.f, 99.f, 99.f};
 
-  uint32_t PIDtrkHe3 = 0xFFFFF; // PID in tracking
+  bool isMatter = false;
+
+  uint32_t PIDtrkHe3 = 0xFFFFF;   // PID in tracking
   uint32_t PIDtrkPr = 0xFFFFF;
 
   float nSigmaHe3 = -10;
@@ -185,7 +187,7 @@ struct lithium4analysis {
   {
 
     if (candidate.itsNCls() < 5 ||
-        candidate.tpcNClsFound() < 90 || // candidate.tpcNClsFound() < 70 ||
+        candidate.tpcNClsFound() < 100 || //candidate.tpcNClsFound() < 70 ||
         candidate.tpcNClsCrossedRows() < 70 ||
         candidate.tpcNClsCrossedRows() < 0.8 * candidate.tpcNClsFindable() ||
         candidate.tpcChi2NCl() > 4.f ||
