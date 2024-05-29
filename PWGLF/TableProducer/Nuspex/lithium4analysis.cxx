@@ -594,10 +594,10 @@ struct lithium4analysis {
                 float correctedTPCinnerParamHe3 = (heliumPID && cfgCompensatePIDinTracking) ? track1.tpcInnerParam() / 2.f : track1.tpcInnerParam();
                 cand.massTOFHe3 = correctedTPCinnerParamHe3 * 2.f * std::sqrt(1.f / (beta * beta) - 1.f);
 
-              if (track2.hasTOF()) {
-                float beta = responseBetaMC.GetBeta(track2);
-                beta = std::min(1.f - 1.e-6f, std::max(1.e-4f, beta)); /// sometimes beta > 1 or < 0, to be checked
-                cand.massTOFPr = track2.tpcInnerParam() * std::sqrt(1.f / (beta * beta) - 1.f);
+                if (track2.hasTOF()) {
+                  float beta = responseBetaMC.GetBeta(track2);
+                  beta = std::min(1.f - 1.e-6f, std::max(1.e-4f, beta)); /// sometimes beta > 1 or < 0, to be checked
+                  cand.massTOFPr = track2.tpcInnerParam() * std::sqrt(1.f / (beta * beta) - 1.f);
               }
 
               cand.momHe3MC = mctrackHe3.pt() * (mctrackHe3.pdgCode() > 0 ? 1 : -1);
