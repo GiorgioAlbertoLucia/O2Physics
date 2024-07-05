@@ -170,7 +170,7 @@ struct CandidateHe3
 
 // =========================================================================================================
 
-struct LFTreeCreator {
+struct LFTreeCreatorClusterStudies {
 
   Service<o2::ccdb::BasicCCDBManager> m_ccdb;
   int m_runNumber;
@@ -865,7 +865,6 @@ struct LFTreeCreator {
       fillHe3Tree(tracks);
 
   }
-
-
+  PROCESS_SWITCH(LFTreeCreatorClusterStudies, processRun3, "process Run 3", false);
 
 };
