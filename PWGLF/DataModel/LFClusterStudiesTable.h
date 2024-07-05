@@ -58,7 +58,7 @@ DECLARE_SOA_COLUMN(TofNsigmaDeDaughterA, tofNsigmaDeDaughterA, float);
 DECLARE_SOA_COLUMN(TofNsigmaHeDaughterA, tofNsigmaHeDaughterA, float);
 DECLARE_SOA_COLUMN(Chi2itsDaughterA, chi2itsDaughterA, float);
 DECLARE_SOA_COLUMN(Chi2tpcDaughterA, chi2tpcDaughterA, float);
-DECLARE_SOA_COLUMN(Chi2matchingITStpcDaughterA, chi2matchingITStpcDaughterA, float);
+DECLARE_SOA_COLUMN(HasTPCDaughterA, hasTPCDaughterA, bool);
 
 DECLARE_SOA_COLUMN(PDaughterB, pDaughterB, float);
 DECLARE_SOA_COLUMN(PtDaughterB, ptDaughterB, float);
@@ -84,7 +84,7 @@ DECLARE_SOA_COLUMN(TofNsigmaDeDaughterB, tofNsigmaDeDaughterB, float);
 DECLARE_SOA_COLUMN(TofNsigmaHeDaughterB, tofNsigmaHeDaughterB, float);
 DECLARE_SOA_COLUMN(Chi2itsDaughterB, chi2itsDaughterB, float);
 DECLARE_SOA_COLUMN(Chi2tpcDaughterB, chi2tpcDaughterB, float);
-DECLARE_SOA_COLUMN(Chi2matchingITStpcDaughterB, chi2matchingITStpcDaughterB, float);
+DECLARE_SOA_COLUMN(HasTPCDaughterB, hasTPCDaughterB, bool);
 } // namespace LFClusterStudiesTables
 
 DECLARE_SOA_TABLE(
@@ -124,7 +124,7 @@ DECLARE_SOA_TABLE(
     LFClusterStudiesTables::TofNsigmaHeDaughterA,
     LFClusterStudiesTables::Chi2itsDaughterA,
     LFClusterStudiesTables::Chi2tpcDaughterA,
-    LFClusterStudiesTables::Chi2matchingITStpcDaughterA,
+    LFClusterStudiesTables::HasTPCDaughterA,
     LFClusterStudiesTables::PDaughterB,
     //LFClusterStudiesTables::PtDaughterB,
     LFClusterStudiesTables::EtaDaughterB,
@@ -149,7 +149,7 @@ DECLARE_SOA_TABLE(
     LFClusterStudiesTables::TofNsigmaHeDaughterB,
     LFClusterStudiesTables::Chi2itsDaughterB,
     LFClusterStudiesTables::Chi2tpcDaughterB,
-    LFClusterStudiesTables::Chi2matchingITStpcDaughterB)
+    LFClusterStudiesTables::HasTPCDaughterB);
 
 DECLARE_SOA_TABLE(
     ClStCascTable, "AOD", "CLSTCASCTABLE",
@@ -166,6 +166,7 @@ DECLARE_SOA_TABLE(
     //LFClusterStudiesTables::PtDaughterA,
     LFClusterStudiesTables::EtaDaughterA,
     LFClusterStudiesTables::PhiDaughterA,
+    LFClusterStudiesTables::PTPCDaughterA,
     LFClusterStudiesTables::PDGCodeDaughterA,
     LFClusterStudiesTables::DcaToPVDaughterA,
     LFClusterStudiesTables::ItsClusterSizeDaughterA,
@@ -185,7 +186,35 @@ DECLARE_SOA_TABLE(
     LFClusterStudiesTables::TofNsigmaHeDaughterA,
     LFClusterStudiesTables::Chi2itsDaughterA,
     LFClusterStudiesTables::Chi2tpcDaughterA,
-    LFClusterStudiesTables::Chi2matchingITStpcDaughterA)
+    LFClusterStudiesTables::HasTPCDaughterA);
+
+DECLARE_SOA_TABLE(
+    ClStNucTable, "AOD", "CLSTNUCTABLE",
+    LFClusterStudiesTables::PDaughterA,
+    //LFClusterStudiesTables::PtDaughterA,
+    LFClusterStudiesTables::EtaDaughterA,
+    LFClusterStudiesTables::PhiDaughterA,
+    LFClusterStudiesTables::PTPCDaughterA,
+    LFClusterStudiesTables::PDGCodeDaughterA,
+    LFClusterStudiesTables::DcaToPVDaughterA,
+    LFClusterStudiesTables::ItsClusterSizeDaughterA,
+    LFClusterStudiesTables::TpcSignalDaughterA,
+    LFClusterStudiesTables::TpcNclsDaughterA,
+    LFClusterStudiesTables::TpcNsigmaElDaughterA,
+    LFClusterStudiesTables::TpcNsigmaPiDaughterA,
+    LFClusterStudiesTables::TpcNsigmaKaDaughterA,
+    LFClusterStudiesTables::TpcNsigmaPrDaughterA,
+    LFClusterStudiesTables::TpcNsigmaDeDaughterA,
+    LFClusterStudiesTables::TpcNsigmaHeDaughterA,
+    LFClusterStudiesTables::TofNsigmaElDaughterA,
+    LFClusterStudiesTables::TofNsigmaPiDaughterA,
+    LFClusterStudiesTables::TofNsigmaKaDaughterA,
+    LFClusterStudiesTables::TofNsigmaPrDaughterA,
+    LFClusterStudiesTables::TofNsigmaDeDaughterA,
+    LFClusterStudiesTables::TofNsigmaHeDaughterA,
+    LFClusterStudiesTables::Chi2itsDaughterA,
+    LFClusterStudiesTables::Chi2tpcDaughterA,
+    LFClusterStudiesTables::HasTPCDaughterA);
 
 } // namespace o2::aod
 
