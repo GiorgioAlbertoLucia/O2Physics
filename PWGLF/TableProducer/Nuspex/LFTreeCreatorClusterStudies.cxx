@@ -56,8 +56,6 @@ using Track = o2::track::TrackParCov;
 using TracksFullIU = soa::Join<aod::TracksIU, aod::TracksExtra, aod::TracksCovIU, aod::pidTPCEl, aod::pidTPCPi, aod::pidTPCKa, aod::pidTPCPr, aod::pidTPCDe, aod::pidTPCHe, aod::pidTOFEl, aod::pidTOFPi, aod::pidTOFKa, aod::pidTOFPr, aod::pidTOFDe, aod::pidTOFHe>;
 using CollisionsCustom = soa::Join<aod::Collisions, aod::EvSels>;
 
-// =========================================================================================================
-
 namespace physics
 {
   namespace pdg 
@@ -75,12 +73,11 @@ namespace BetheBloch
 
 }
 
-// =========================================================================================================
-
 enum V0Type : uint8_t {
   K0s = 0,
   Lambda,
-  AntiLambda
+  AntiLambda,
+  Photon
 };
 
 enum CascadeType : uint8_t {
@@ -88,89 +85,47 @@ enum CascadeType : uint8_t {
   OmegaMinus
 };
 
-// =========================================================================================================
-
-/**
- * Struct with the information of a candidate De to be stored in the tree
-*/
-struct CandidateDe
-{
-  int64_t globalIndex_De = -999;
-  
-  float p_De = -999.f;
-  float pt_De = -999.f;
-  float eta_De = -999.f;
-  float phi_De = -999.f;
-  float pTPC_De = -999.f;
-  
-  int pdgCode_De = -999;
-
-  float dcaPV_De = -999.f;
-  uint32_t itsClSize_De = 0u;
-  uint16_t tpcSignal_De = 0u;
-  uint16_t nTPCcls_De = 0u;
-
-  float nSigmaTPCe_De = -999.f;
-  float nSigmaTPCpi_De = -999.f;
-  float nSigmaTPCk_De = -999.f;
-  float nSigmaTPCp_De = -999.f;
-  float nSigmaTPCdeu_De = -999.f;
-  float nSigmaTPChe3_De = -999.f;
-
-  float nSigmaTOFe_De = -999.f;
-  float nSigmaTOFpi_De = -999.f;
-  float nSigmaTOFk_De = -999.f;
-  float nSigmaTOFp_De = -999.f;
-  float nSigmaTOFdeu_De = -999.f;
-  float nSigmaTOFhe3_De = -999.f;
-
-  float chi2its_De = -999.f;
-  float chi2tpc_De = -999.f;
-  bool hasTPC_De = true;
+enum Selections {
+  kNoCut = 0, 
+  kSel8,
+  kVtxZ, 
+  kAll
 };
 
-/**
- * Struct with the information of a candidate He3 to be stored in the tree
-*/
-struct CandidateHe3 
-{
-  int64_t globalIndex_He3 = -999;
-  
-  float p_He3 = -999.f;
-  float pt_He3 = -999.f;
-  float eta_He3 = -999.f;
-  float phi_He3 = -999.f;
-  float pTPC_He3 = -999.f;
-  
-  int pdgCode_He3 = -999;
-
-  float dcaPV_He3 = -999.f;
-  uint32_t itsClSize_He3 = 0u;
-  uint16_t tpcSignal_He3 = 0u;
-  uint16_t nTPCcls_He3 = 0u;
-
-  float nSigmaTPCe_He3 = -999.f;
-  float nSigmaTPCpi_He3 = -999.f;
-  float nSigmaTPCHe3_He3 = -999.f;
-  float nSigmaTPCp_He3 = -999.f;
-  float nSigmaTPCdeu_He3 = -999.f;
-  float nSigmaTPChe3_He3 = -999.f;
-
-  float nSigmaTOFe_He3 = -999.f;
-  float nSigmaTOFpi_He3 = -999.f;
-  float nSigmaTOFHe3_He3 = -999.f;
-  float nSigmaTOFp_He3 = -999.f;
-  float nSigmaTOFdeu_He3 = -999.f;
-  float nSigmaTOFhe3_He3 = -999.f;
-
-  float chi2its_He3 = -999.f;
-  float chi2tpc_He3 = -999.f;
-  bool hasTPC_He3 = true;
+enum V0Selections {
+  kV0NoCut = 0,
+  kV0DaughterQuality,
+  kV0DCA,
+  kV0Radius,
+  kV0dcaPV,
+  kV0CosPA,
+  kV0PID,
+  kV0All
 };
 
-// =========================================================================================================
+enum CascSelections {
+  kCascDCA = 0,
+  kCascCosPA,
+  kAcceptedOmega,
+  kRejectedXi,
+  kCascAll
+};
 
-struct LFTreeCreatorClusterStudies {
+enum DeSelections {
+  kDeNoCut = 0,
+  kDePIDforTrk,
+  kDePID,
+  kDeAll
+};
+
+enum He3Selections {
+  kHe3NoCut = 0,
+  kHe3PIDforTrk,
+  kHe3PID,
+  kHe3All
+};
+
+struct LfTreeCreatorClusterStudies {
 
   Service<o2::ccdb::BasicCCDBManager> m_ccdb;
   int m_runNumber;
@@ -205,10 +160,10 @@ struct LFTreeCreatorClusterStudies {
   Configurable<float> v0setting_massWindowLambda{"v0setting_massWindowLambda", 0.02f, "Mass window for the Lambda"};
   Configurable<float> v0setting_massWindowK0s{"v0setting_massWindowK0s", 0.02f, "Mass window for the K0s"};
   
-  Configurable<float> cascsetting_dcaCascDaughters{"v0setting_dcaV0daughters", 0.1f, "DCA between the V0 daughters"};
-  Configurable<float> cascsetting_cosPA{"v0setting_cosPA", 0.99f, "Cosine of the pointing angle of the V0"};
-  Configurable<float> cascsetting_massWindowOmega{"v0setting_massWindowOmega", 0.01f, "Mass window for the Omega"};
-  Configurable<float> cascsetting_massWindowXi{"v0setting_massWindowXi", 0.01f, "Mass window for the Xi"};
+  Configurable<float> cascsetting_dcaCascDaughters{"casc_setting_dcaV0daughters", 0.1f, "DCA between the V0 daughters"};
+  Configurable<float> cascsetting_cosPA{"casc_setting_cosPA", 0.99f, "Cosine of the pointing angle of the V0"};
+  Configurable<float> cascsetting_massWindowOmega{"casc_setting_massWindowOmega", 0.01f, "Mass window for the Omega"};
+  Configurable<float> cascsetting_massWindowXi{"casc_setting_massWindowXi", 0.01f, "Mass window for the Xi"};
 
   Configurable<float> desetting_nsigmatpc{"desetting_nsigmaCutTPC", 4.f, "Number of sigmas for the TPC PID"};
   Configurable<bool> he3setting_compensatePIDinTracking{"he3setting_compensatePIDinTracking", true, "Compensate PID in tracking"};
@@ -225,12 +180,21 @@ struct LFTreeCreatorClusterStudies {
   HistogramRegistry m_hCheck{
     "LFTreeCreator",
     {
-      {"armenteros_plot_before_selections", "Armenteros-Podolanski plot; #alpha; q_{T} (GeV/c)", {HistType::kTH2F, {{100, -1.f, 1.f}, {100, 0.f, 0.2f}}}},
-      {"armenteros_plot", "Armenteros-Podolanski plot; #alpha; q_{T} (GeV/c)", {HistType::kTH2F, {{100, -1.f, 1.f}, {100, 0.f, 0.2f}}}},
-      {"Xi_vs_Omega", "Mass Xi vs Omega; mass Omega (GeV/c^{2}); mass Xi (GeV/c^{2})", {HistType::kTH2F, {{100, 1.f, 2.f}, {100, 1.f, 2.f}}}},
-      {"massOmega", "Mass Omega; mass Omega (GeV/c^{2}); counts", {HistType::kTH1F, {{100, 1.f, 2.f}}}},
-      {"massOmegaWithBkg", "Mass Omega with Background; mass Omega (GeV/c^{2}); counts", {HistType::kTH1F, {{100, 1.f, 2.f}}}},
-      {"massLambda", "Mass Lambda; mass Lambda (GeV/c^{2}); counts", {HistType::kTH1F, {{100, 1.f, 2.f}}}},
+      {"track_selections", "Track selection; selection; counts", {HistType::kTH1F, {{Selections::kAll, -0.5, static_cast<double>(Selections::kAll) - 0.5}}}},
+      {"v0_selections", "V0 selection; selection; counts", {HistType::kTH1F, {{V0Selections::kV0All, -0.5, static_cast<double>(V0Selections::kV0All) - 0.5}}}},
+      {"casc_selections", "Cascade selection; selection; counts", {HistType::kTH1F, {{CascSelections::kCascAll, -0.5, static_cast<double>(CascSelections::kCascAll) - 0.5}}}},
+      {"de_selections", "Deuteron track selection; selection; counts", {HistType::kTH1F, {{DeSelections::kDeAll, -0.5, static_cast<double>(DeSelections::kDeAll) - 0.5}}}},
+      {"he3_selections", "He3 track selection; selection; counts", {HistType::kTH1F, {{He3Selections::kHe3All, -0.5, static_cast<double>(He3Selections::kHe3All) - 0.5}}}},
+      {"invmass_Lambda", "#Lambda invariant mass; m (GeV/#it{c}^{2}); counts", {HistType::kTH1F, {{200, 0.7f, 1.5f}}}},
+      {"invmass_K0s", "K0s invariant mass; m (GeV/#it{c}^{2}); counts", {HistType::kTH1F, {{200, 0.4f, 0.6f}}}},
+      {"armenteros_plot_before_selections", "Armenteros-Podolanski plot; #alpha; q_{T} (GeV/#it{c})", {HistType::kTH2F, {{100, -1.f, 1.f}, {100, 0.f, 0.3f}}}},
+      {"armenteros_plot", "Armenteros-Podolanski plot; #alpha; q_{T} (GeV/#it{c})", {HistType::kTH2F, {{100, -1.f, 1.f}, {100, 0.f, 3.f}}}},
+      {"Xi_vs_Omega", "Mass Xi vs Omega; mass Omega (GeV/#it{c}^{2}); mass Xi (GeV/#it{c}^{2})", {HistType::kTH2F, {{100, 1.f, 2.f}, {100, 1.f, 2.f}}}},
+      {"massOmega", "Mass Omega; mass Omega (GeV/#it{c}^{2}); #it{c}ounts", {HistType::kTH1F, {{100, 1.f, 2.f}}}},
+      {"massOmegaWithBkg", "Mass Omega with Background; mass Omega (GeV/#it{c}^{2}); #it{c}ounts", {HistType::kTH1F, {{100, 1.f, 2.f}}}},
+      {"massLambda", "Mass Lambda; mass Lambda (GeV/#it{c}^{2}); #it{c}ounts", {HistType::kTH1F, {{100, 1.f, 2.f}}}},
+      {"BetheBlochDe", "Bethe-Bloch Deuteron; p (GeV/#it{c}); dE/dx (a.u.)", {HistType::kTH2F, {{200, -5.0f, 5.0f}, {100, 0.0f, 2000.0f}}}},
+      {"BetheBlochHe3", "Bethe-Bloch He3; p (GeV/#it{c}); dE/dx (a.u.)", {HistType::kTH2F, {{200, -5.0f, 5.0f}, {100, 0.0f, 2000.0f}}}},
       {"zVtx", "Binning for the vertex z in cm", {HistType::kTH1F, {{100, -20.f, 20.f}}}}
     },
     OutputObjHandlingPolicy::AnalysisObject, 
@@ -248,8 +212,6 @@ struct LFTreeCreatorClusterStudies {
   std::vector<V0TrackParCov> m_v0TrackParCovs;
 
   o2::vertexing::DCAFitterN<2> m_fitter;
-
-  // =========================================================================================================
 
   template <typename T>
   bool initializeFitter(const T& trackParCovA, const T& trackParCovB) 
@@ -326,19 +288,20 @@ struct LFTreeCreatorClusterStudies {
     return std::sqrt(eMother * eMother - lmomMotherl * lmomMotherl);
   }
 
-  // =========================================================================================================
-
   bool collisionSelection(const CollisionsCustom::iterator& collision)
   {
-    if (!collision.sel8()) {
-      return false;
-    }
-    if (!collision.selection_bit(aod::evsel::kNoSameBunchPileup)) {
-      return false;
-    }
+    m_hCheck.fill(HIST("track_selections"), Selections::kNoCut);
+    //if (!collision.sel8()) {
+    //  return false;
+    //}
+    m_hCheck.fill(HIST("track_selections"), Selections::kSel8);
+      //if (!collision.selection_bit(aod::evsel::kNoSameBunchPileup)) {
+      //  return false;
+      //}
     if (std::abs(collision.posZ()) > setting_zVtxMax) {
       return false;
     }
+    m_hCheck.fill(HIST("track_selections"), Selections::kVtxZ);
     return true;
   }
 
@@ -368,15 +331,19 @@ struct LFTreeCreatorClusterStudies {
     if (dcaV0daughters > v0setting_dcaV0daughters) {
         return false;
       }
+      m_hCheck.fill(HIST("v0_selections"), V0Selections::kV0DCA);
       if (radiusV0 > v0setting_radiusMax || radiusV0 < v0setting_radiusMin) {
         return false;
       }
+      m_hCheck.fill(HIST("v0_selections"), V0Selections::kV0Radius);
       if (dcaV0toPV > v0setting_dcaV0toPV) {
         return false;
       }
+      m_hCheck.fill(HIST("v0_selections"), V0Selections::kV0dcaPV);
       if (cosPA < v0setting_cosPA) {
         return false;
       }
+      m_hCheck.fill(HIST("v0_selections"), V0Selections::kV0CosPA);
       return true;
   }
 
@@ -385,9 +352,11 @@ struct LFTreeCreatorClusterStudies {
     if (dcaCascDaughters > cascsetting_dcaCascDaughters) {
       return false;
     }
+    m_hCheck.fill(HIST("casc_selections"), CascSelections::kCascDCA);
     if (cosPA < cascsetting_cosPA) {
       return false;
     }
+    m_hCheck.fill(HIST("casc_selections"), CascSelections::kCascCosPA);
     return true;
   }
 
@@ -492,12 +461,16 @@ struct LFTreeCreatorClusterStudies {
 
     for (const auto& v0: v0s) {
 
+      m_hCheck.fill(HIST("v0_selections"), V0Selections::kV0NoCut);
+
       auto posTrack = v0.posTrack_as<TracksFullIU>();
       auto negTrack = v0.negTrack_as<TracksFullIU>();
 
       if (!qualitySelectionV0Daughter(posTrack) || !qualitySelectionV0Daughter(negTrack)) {
         continue;
       }
+
+      m_hCheck.fill(HIST("v0_selections"), V0Selections::kV0DaughterQuality);
 
       auto daughterTrackCovarianceA = getTrackParCov(posTrack);
       auto daughterTrackCovarianceB = getTrackParCov(negTrack);
@@ -530,20 +503,28 @@ struct LFTreeCreatorClusterStudies {
         continue;
       }
       */
-      float dcaV0daughters = std::sqrt(m_fitter.getChi2AtPCACandidate());
+      
+      //float dcaV0daughters = std::sqrt(m_fitter.getChi2AtPCACandidate());
       float radiusV0 = std::hypot(decayVtx[0], decayVtx[1]);
       float dcaV0toPV = std::hypot(decayVtx[0] - PV[0], decayVtx[1] - PV[1]);
       float cosPA = RecoDecay::cpa(PV, decayVtx, momMother);
 
-      if (!qualitySelectionV0(dcaV0toPV, dcaV0daughters, radiusV0, cosPA)) {
-        continue;
-      }
+      //if (!qualitySelectionV0(dcaV0toPV, dcaV0daughters, radiusV0, cosPA)) {
+      //  continue;
+      //}
       
       // mass hypothesis
       float massLambdaV0 = computeMassMother(o2::constants::physics::MassProton, o2::constants::physics::MassPionCharged, momPos, momNeg, momMother);
       float massK0sV0 = computeMassMother(o2::constants::physics::MassPionCharged, o2::constants::physics::MassPionCharged, momPos, momNeg, momMother);
+      //float massPhotonV0 = computeMassMother(o2::constants::physics::MassElectron, o2::constants::physics::MassElectron, momPos, momNeg, momMother);
 
-      uint8_t selectionMap{BIT(Lambda) | BIT(AntiLambda) | BIT(K0s)};
+      m_hCheck.fill(HIST("invmass_Lambda"), massLambdaV0);
+      m_hCheck.fill(HIST("invmass_K0s"), massK0sV0);
+
+      uint8_t selectionMap{BIT(Lambda) | BIT(AntiLambda) | BIT(K0s) | BIT(Photon)};
+      if (!v0.isPhotonV0()) {
+        CLRBIT(selectionMap, Photon);
+      }
       if (std::abs(massK0sV0 - o2::constants::physics::MassK0Short) > v0setting_massWindowK0s) {
         CLRBIT(selectionMap, K0s);
       }
@@ -567,6 +548,7 @@ struct LFTreeCreatorClusterStudies {
       if (selectionMap == 0 || (selectionMap & (selectionMap - 1)) != 0) {
         continue;
       }
+      m_hCheck.fill(HIST("v0_selections"), V0Selections::kV0PID);
 
       int pdgCodeV0 = -999;
       if (TESTBIT(selectionMap, Lambda)) {
@@ -575,6 +557,8 @@ struct LFTreeCreatorClusterStudies {
         pdgCodeV0 = -kLambda0;
       } else if (TESTBIT(selectionMap, K0s)) {
         pdgCodeV0 = kK0Short;
+      } else if (TESTBIT(selectionMap, Photon)) {
+        pdgCodeV0 = kGamma;
       } else {
         continue;
       }
@@ -666,6 +650,8 @@ struct LFTreeCreatorClusterStudies {
     
     for (auto& cascade: cascades) {
 
+      m_hCheck.fill(HIST("casc_selections"), Selections::kNoCut);
+
       auto v0Track = cascade.template v0_as<aod::V0s>();
       auto bachelorTrack = cascade.template bachelor_as<TracksFullIU>(); 
       auto bachelorTrackPar = getTrackPar(bachelorTrack);
@@ -709,11 +695,13 @@ struct LFTreeCreatorClusterStudies {
         continue;
       }
       m_hCheck.fill(HIST("massOmegaWithBkg"), massOmega);
+      m_hCheck.fill(HIST("cascade_selections"), CascSelections::kAcceptedOmega);
 
       if (std::abs(massXi - o2::constants::physics::MassXiMinus) < cascsetting_massWindowXi) {
         continue;
       } // enhance purity by rejecting Xi background
       m_hCheck.fill(HIST("massOmega"), massOmega);
+      m_hCheck.fill(HIST("cascade_selections"), CascSelections::kRejectedXi);
 
       m_KTable(
         std::hypot(momMother[0], momMother[1], momMother[2]),                               // p_mother
@@ -758,12 +746,17 @@ struct LFTreeCreatorClusterStudies {
   void fillDeTree(const TracksFullIU& tracks)
   {
     for (auto& track: tracks) {
+
+      m_hCheck.fill(HIST("de_selections"), DeSelections::kDeNoCut);
       if (track.pidForTracking() != o2::track::PID::Deuteron) {
         continue;
       }
+      m_hCheck.fill(HIST("de_selections"), DeSelections::kDePIDforTrk);
       if (!selectionPIDDe(track)) {
         continue;
       }
+      m_hCheck.fill(HIST("de_selections"), DeSelections::kDePID);
+      m_hCheck.fill(HIST("BetheBlochDe"), track.p() * track.sign(), track.tpcSignal());
 
       m_nucleiTable(
         track.p() * track.sign(),               // p_De,
@@ -798,12 +791,19 @@ struct LFTreeCreatorClusterStudies {
   void fillHe3Tree(const TracksFullIU& tracks)
   {
     for (auto& track: tracks) {
+
+      m_hCheck.fill(HIST("he3_selections"), He3Selections::kHe3NoCut);
+
       if (track.pidForTracking() != o2::track::PID::Helium3) {
         continue;
       }
+      m_hCheck.fill(HIST("he3_selections"), He3Selections::kHe3PIDforTrk);
+      m_hCheck.fill(HIST("BetheBlochHe3"), track.p() * track.sign(), track.tpcSignal());
       if (!selectionPIDHe3(track)) {
         continue;
       }
+      m_hCheck.fill(HIST("he3_selections"), He3Selections::kHe3PID);
+      //m_hCheck.fill(HIST("BetheBlochHe3"), track.p() * track.sign(), track.tpcSignal());
       
       m_nucleiTable(
         track.p() * track.sign(),               // p_He3,
@@ -836,35 +836,41 @@ struct LFTreeCreatorClusterStudies {
 
   }
 
-  void processRun3(CollisionsCustom::iterator const& collision, TracksFullIU const& tracks, aod::V0s const& v0s, aod::Cascades const& cascades) 
+  void processRun3(CollisionsCustom const& collisions, TracksFullIU const& tracks, aod::V0s const& v0s, aod::Cascades const& cascades, aod::BCsWithTimestamps const&) 
   {
-    auto bc = collision.bc_as<aod::BCsWithTimestamps>();
-    initCCDB(bc);
+    for (const auto& collision : collisions) {
+      auto bc = collision.bc_as<aod::BCsWithTimestamps>();
+      initCCDB(bc);
 
-    if (!collisionSelection(collision)) {
-      return;
-    }
+      if (!collisionSelection(collision)) {
+        return;
+      }
 
-    m_hCheck.fill(HIST("zVtx"), collision.posZ());
-    std::array<float, 3> PV = {collision.posX(), collision.posY(), collision.posZ()};
+      m_hCheck.fill(HIST("zVtx"), collision.posZ());
+      std::array<float, 3> PV = {collision.posX(), collision.posY(), collision.posZ()};
 
-    const uint64_t collIdx = collision.globalIndex();
-    auto v0Table_thisCollision = v0s.sliceBy(m_perCollisionV0, collIdx);
-    auto cascTable_thisCollision = cascades.sliceBy(m_perCollisionCascade, collIdx);
-    v0Table_thisCollision.bindExternalIndices(&tracks);
-    cascTable_thisCollision.bindExternalIndices(&tracks);
-    cascTable_thisCollision.bindExternalIndices(&v0s);
+      const uint64_t collIdx = collision.globalIndex();
+      auto v0Table_thisCollision = v0s.sliceBy(m_perCollisionV0, collIdx);
+      auto cascTable_thisCollision = cascades.sliceBy(m_perCollisionCascade, collIdx);
+      v0Table_thisCollision.bindExternalIndices(&tracks);
+      cascTable_thisCollision.bindExternalIndices(&tracks);
+      cascTable_thisCollision.bindExternalIndices(&v0s);
 
-    if (setting_fillV0)
-      fillV0Tree(PV, v0Table_thisCollision);
-    if (setting_fillK && setting_fillV0) // the v0 loops are needed for the Ks
-      fillKTree(PV, cascTable_thisCollision);
-    if (setting_fillDe)
-      fillDeTree(tracks);
-    if (setting_fillHe3)
-      fillHe3Tree(tracks);
-
+      if (setting_fillV0)
+        fillV0Tree(PV, v0Table_thisCollision);
+      if (setting_fillK && setting_fillV0) // the v0 loops are needed for the Ks
+        fillKTree(PV, cascTable_thisCollision);
+      if (setting_fillDe)
+        fillDeTree(tracks);
+      if (setting_fillHe3)
+        fillHe3Tree(tracks);
+      }
   }
-  PROCESS_SWITCH(LFTreeCreatorClusterStudies, processRun3, "process Run 3", false);
+  PROCESS_SWITCH(LfTreeCreatorClusterStudies, processRun3, "process Run 3", false);
 
-};
+}; // LfTreeCreatorClusterStudies
+
+WorkflowSpec defineDataProcessing(ConfigContext const& cfgc)
+{
+  return WorkflowSpec{adaptAnalysisTask<LfTreeCreatorClusterStudies>(cfgc)};
+}
