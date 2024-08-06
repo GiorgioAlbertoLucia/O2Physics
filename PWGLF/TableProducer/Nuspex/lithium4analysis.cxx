@@ -65,8 +65,8 @@ using std::array;
 using McIter = aod::McParticles::iterator;
 using CollBracket = o2::math_utils::Bracket<int>;
 using EventCandidates = soa::Filtered<soa::Join<aod::Collisions, aod::EvSels>>;
-using TrackCandidates = soa::Filtered<soa::Join<aod::Tracks, aod::TracksExtra, aod::TracksDCA, aod::TrackSelection, aod::pidTPCFullPr, aod::pidTOFFullPr, aod::TOFSignal, aod::TOFEvTime>>;
-using TrackCandidatesMC = soa::Filtered<soa::Join<aod::Tracks, aod::TracksExtra, aod::TracksDCA, aod::TrackSelection, aod::pidTPCFullPr, aod::pidTOFFullPr, aod::TOFSignal, aod::TOFEvTime, aod::McTrackLabels>>;
+using TrackCandidates = soa::Join<aod::Tracks, aod::TracksExtra, aod::TracksDCA, aod::TrackSelection, aod::pidTPCFullPr, aod::pidTOFFullPr, aod::TOFSignal, aod::TOFEvTime>;
+using TrackCandidatesMC = soa::Join<aod::Tracks, aod::TracksExtra, aod::TracksDCA, aod::TrackSelection, aod::pidTPCFullPr, aod::pidTOFFullPr, aod::TOFSignal, aod::TOFEvTime, aod::McTrackLabels>;
 
 namespace
 {
@@ -288,20 +288,6 @@ struct lithium4analysis {
       }
     }
 
-    /* Mario
-    o2::parameters::GRPMagField* grpmag = 0x0;
-    auto grpmagPath{"GLO/Config/GRPMagField"};
-    grpmag = m_ccdb->getForTimeStamp<o2::parameters::GRPMagField>("GLO/Config/GRPMagField", run3grp_timestamp);
-    if (!grpmag) {
-      LOG(fatal) << "Got nullptr from CCDB for path " << grpmagPath << " of object GRPMagField for timestamp " << run3grp_timestamp;
-    }
-    o2::base::Propagator::initFieldFromGRP(grpmag);
-
-    // Fetch magnetic field from ccdb for current collision
-    m_d_bz = o2::base::Propagator::Instance()->getNominalBz();
-    LOG(info) << "Retrieved GRP for timestamp " << run3grp_timestamp << " with magnetic field of " << m_d_bz << " kG";
-    */
-
     if (!ccdbsetting_pidPath.value.empty()) {
       auto he3pid = m_ccdb->getForTimeStamp<std::array<float, 6>>(ccdbsetting_pidPath.value + "_He3", run3grp_timestamp);
       std::copy(he3pid->begin(), he3pid->end(), m_BBparamsHe.begin());
@@ -433,19 +419,19 @@ struct lithium4analysis {
     return true;
   }
 
-  template <typename T1, typename T2>
-  void fillCandidateBeta(const T1& trackHe3, const T2& trackPr, Lithium4Candidate& li4cand)
+  template <typename T1>
+  void fillCandidateBeta(const T1& trackHe3, const T1& trackPr, Lithium4Candidate& li4cand)
   // void fillCandidateBeta(const TrackCandidates::iterator& trackHe3, const TrackCandidates::iterator& trackPr, Lithium4Candidate& li4cand)
   {
     if (trackHe3.hasTOF()) {
-      float beta = m_responseBeta.GetBeta<T1>(trackHe3);
+      float beta = m_responseBeta.GetBeta(trackHe3);
       beta = std::min(1.f - 1.e-6f, std::max(1.e-4f, beta)); /// sometimes beta > 1 or < 0, to be checked
       bool heliumPID = trackHe3.pidForTracking() == o2::track::PID::Helium3 || trackHe3.pidForTracking() == o2::track::PID::Alpha;
       float correctedTPCinnerParamHe3 = (heliumPID && setting_compensatePIDinTracking) ? trackHe3.tpcInnerParam() / 2.f : trackHe3.tpcInnerParam();
       li4cand.massTOFHe3 = correctedTPCinnerParamHe3 * 2.f * std::sqrt(1.f / (beta * beta) - 1.f);
     }
     if (trackPr.hasTOF()) {
-      float beta = m_responseBeta.GetBeta<T2>(trackPr);
+      float beta = m_responseBeta.GetBeta(trackPr);
       beta = std::min(1.f - 1.e-6f, std::max(1.e-4f, beta)); /// sometimes beta > 1 or < 0, to be checked
       li4cand.massTOFPr = trackPr.tpcInnerParam() * std::sqrt(1.f / (beta * beta) - 1.f);
     }
@@ -461,9 +447,8 @@ struct lithium4analysis {
     return true;
   }
 
-  template <typename T1, typename T2>
-  void fillMcCandidateBeta(const T1& trackHe3, const T2& trackPr, Lithium4Candidate& li4cand)
-  // void fillMcCandidateBeta(const TrackCandidatesMC::iterator& trackHe3, const TrackCandidatesMC::iterator& trackPr, Lithium4Candidate& li4cand)
+  template <typename T1>
+  void fillMcCandidateBeta(const T1& trackHe3, const T1& trackPr, Lithium4Candidate& li4cand)
   {
     if (trackHe3.hasTOF()) {
       float beta = m_responseBetaMC.GetBeta(trackHe3);
@@ -529,8 +514,7 @@ struct lithium4analysis {
     }
   }
 
-  template <typename T>
-  void pairTracksEventMixing(const T& pairs)
+  void pairTracksEventMixing()
   {
     for (auto& [c1, tracks1, c2, tracks2] : pair) {
       if (!c1.sel8() || !c2.sel8()) {
@@ -686,7 +670,7 @@ struct lithium4analysis {
   void processMixedEvent(EventCandidates& /*collisions*/, const TrackCandidates& tracks)
   {
     m_trackPairs.clear();
-    pairTracksEventMixing(tracks);
+    pairTracksEventMixing();
 
     for (auto& trackPair : m_trackPairs) {
 
