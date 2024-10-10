@@ -69,6 +69,8 @@ DECLARE_SOA_COLUMN(PhiMCPr, phiMCPr, float);
 DECLARE_SOA_COLUMN(SignedPtMC, signedPtMC, float);
 DECLARE_SOA_COLUMN(MassMC, massMC, float);
 
+DECLARE_SOA_COLUMN(Multiplicity, multiplicity, uint16_t);
+
 } // namespace Lithium4TablesNS
 
 DECLARE_SOA_TABLE(Lithium4Table, "AOD", "LITHIUM4TABLE",
@@ -100,7 +102,8 @@ DECLARE_SOA_TABLE(Lithium4Table, "AOD", "LITHIUM4TABLE",
                   Lithium4TablesNS::SharedClustersHe3,
                   Lithium4TablesNS::SharedClustersPr,
                   Lithium4TablesNS::IsBkgLS,
-                  Lithium4TablesNS::IsBkgEM)
+                  Lithium4TablesNS::IsBkgEM,
+                  Lithium4TablesNS::Multiplicity)
 DECLARE_SOA_TABLE(Lithium4TableMC, "AOD", "LITHIUM4TABLEMC",
                   Lithium4TablesNS::PtHe3,
                   Lithium4TablesNS::EtaHe3,
@@ -131,6 +134,7 @@ DECLARE_SOA_TABLE(Lithium4TableMC, "AOD", "LITHIUM4TABLEMC",
                   Lithium4TablesNS::SharedClustersPr,
                   Lithium4TablesNS::IsBkgLS,
                   Lithium4TablesNS::IsBkgEM,
+                  Lithium4TablesNS::Multiplicity,
                   Lithium4TablesNS::PtMCHe3,
                   Lithium4TablesNS::EtaMCHe3,
                   Lithium4TablesNS::PhiMCHe3,
