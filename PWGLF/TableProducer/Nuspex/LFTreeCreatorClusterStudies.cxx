@@ -49,6 +49,7 @@
 
 #include <cstdint>
 #include <cstring>
+#include <string>
 #include <numeric>
 #include <random>
 #include <unordered_map>
