@@ -283,17 +283,23 @@ struct StrangeCascTrack {
       return false;
     return true;
   }
-  // checks general selection criteria for cascades
+  // checks general selection criteria for cascades - from std casc
   template <typename TEvent, typename TCascade>
-  bool isValidCasc(TEvent collision, TCascade cascade, TString particle)
+  bool isValidCascGen(TEvent collision, TCascade cascade)
+  {
+    if (cascade.v0cosPA(collision.posX(), collision.posY(), collision.posZ()) < selCuts.cutV0CosPA)
+      return false;
+    if (cascade.bachBaryonCosPA() < selCuts.cutBachCosPA)
+      return false;
+    return true;
+  }
+  // checks general selection criteria for cascades - from std or tracked casc
+  template <typename TCascade>
+  bool isValidCascSpec(TCascade cascade, TString particle)
   {
     if (cascade.dcaXYCascToPV() > selCuts.cutDCAtoPVxy)
       return false;
     if (cascade.dcaZCascToPV() > selCuts.cutDCAtoPVz)
-      return false;
-    if (cascade.v0cosPA(collision.posX(), collision.posY(), collision.posZ()) < selCuts.cutV0CosPA)
-      return false;
-    if (cascade.bachBaryonCosPA() < selCuts.cutBachCosPA)
       return false;
     ROOT::Math::PxPyPzMVector momentum;
     if (particle == "xi")
@@ -490,11 +496,11 @@ struct StrangeCascTrack {
 
       if (doApplyPurity1D) {
         if constexpr (requires { cascade.topologyChi2(); }) {
-          purityOmega = hPurityOmegaTra1D->Interpolate(cascade.pt(), mult);
-          purityXi = hPurityXiTra1D->Interpolate(cascade.pt(), mult);
+          purityOmega = hPurityOmegaTra1D->Interpolate(cascade.pt());
+          purityXi = hPurityXiTra1D->Interpolate(cascade.pt());
           if (doPropagatePurity1D) {
-            purityOmegaErr = hPurityErrOmegaTra1D->Interpolate(cascade.pt(), mult);
-            purityXiErr = hPurityErrXiTra1D->Interpolate(cascade.pt(), mult);
+            purityOmegaErr = hPurityErrOmegaTra1D->Interpolate(cascade.pt());
+            purityXiErr = hPurityErrXiTra1D->Interpolate(cascade.pt());
           }
           if (purityOmega == 0) { // check for zero purity, do not apply if the case
             purityOmega = 1.;
@@ -505,11 +511,11 @@ struct StrangeCascTrack {
             purityXiErr = 0.;
           }
         } else {
-          purityOmega = hPurityOmegaStd1D->Interpolate(cascade.pt(), mult);
-          purityXi = hPurityXiStd1D->Interpolate(cascade.pt(), mult);
+          purityOmega = hPurityOmegaStd1D->Interpolate(cascade.pt());
+          purityXi = hPurityXiStd1D->Interpolate(cascade.pt());
           if (doPropagatePurity1D) {
-            purityOmegaErr = hPurityErrOmegaStd1D->Interpolate(cascade.pt(), mult);
-            purityXiErr = hPurityErrXiStd1D->Interpolate(cascade.pt(), mult);
+            purityOmegaErr = hPurityErrOmegaStd1D->Interpolate(cascade.pt());
+            purityXiErr = hPurityErrXiStd1D->Interpolate(cascade.pt());
           }
           if (purityOmega == 0) { // check for zero purity, do not apply if the case
             purityOmega = 1.;
@@ -603,11 +609,11 @@ struct StrangeCascTrack {
         }
       }
       if (doApplyGenCutsXi) {
-        if (!isValidCasc(collision, stdCasc, "xi"))
+        if (!isValidCascGen(collision, stdCasc) || !isValidCascSpec(cascade, "xi"))
           passedAllSelsXi = false;
       }
       if (doApplyGenCutsOmega) {
-        if (!isValidCasc(collision, stdCasc, "omega"))
+        if (!isValidCascGen(collision, stdCasc) || !isValidCascSpec(cascade, "omega"))
           passedAllSelsOmega = false;
       }
       // apply pt cuts
