@@ -459,6 +459,7 @@ struct he3HadronFemto {
                                  mHe3HadronParams.itsParams[Species::kHad][3], mHe3HadronParams.itsParams[Species::kHad][4], mHe3HadronParams.itsParams[Species::kHad][5],
                                  mHe3HadronParams.itsParams[Species::kHe3][3], mHe3HadronParams.itsParams[Species::kHe3][4], mHe3HadronParams.itsParams[Species::kHe3][5]);
     }
+    mResponseITS.printParameters();
 
     const int nHePidTrkParams = 3;
     for (int i = 0; i < nHePidTrkParams; i++) {

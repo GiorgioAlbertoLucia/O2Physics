@@ -167,6 +167,15 @@ struct ITSResponse {
                   p0_res_Z2, p1_res_Z2, p2_res_Z2);
   }
 
+  static void printParameters()
+  {
+    LOG(info) << "ITS PID response parameters: ";
+    LOG(info) << "p0: " << mITSRespParams[0] << ", p1: " << mITSRespParams[1] << ", p2: " << mITSRespParams[2];
+    LOG(info) << "p0_Z2: " << mITSRespParamsZ2[0] << ", p1_Z2: " << mITSRespParamsZ2[1] << ", p2_Z2: " << mITSRespParamsZ2[2];
+    LOG(info) << "p0_res: " << mResolutionParams[0] << ", p1_res: " << mResolutionParams[1] << ", p2_res: " << mResolutionParams[2];
+    LOG(info) << "p0_res_Z2: " << mResolutionParamsZ2[0] << ", p1_res_Z2: " << mResolutionParamsZ2[1] << ", p2_res_Z2: " << mResolutionParamsZ2[2];
+  }
+  
  private:
   static std::array<float, 3> mITSRespParams;
   static std::array<float, 3> mITSRespParamsZ2;
